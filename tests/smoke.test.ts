@@ -7,7 +7,7 @@ import { generatePlan, getSolver, weekAverage, compliance, type Product, type Pr
 const products = data.products as unknown as Product[];
 
 const base: Profile = {
-  sex: "female", age: 34, heightCm: 168, weightKg: 78, activity: "low", goal: "lose", tier: "econom", mealsPerDay: 4,
+  sex: "female", age: 34, heightCm: 168, weightKg: 78, activity: "low", strength: false, goal: "lose", tier: "econom", mealsPerDay: 4,
   pregnancy: "none", lactation: "none", ckd: "none", hyperkalemia: false, diabetes: "none", exclusions: [], dislikes: [], season: "winter", treats: "some", favTreats: [],
 };
 
@@ -43,6 +43,8 @@ describe("generatePlan", () => {
       { exclusions: ["lactose", "gluten", "fish"], goal: "lose", tier: "econom", sex: "male" },
       { treats: "more", favTreats: ["zefir", "ice_cream"], goal: "lose", tier: "business" },
       { treats: "none", goal: "maintain", tier: "econom" },
+      { strength: true, goal: "lose", tier: "business", sex: "male", weightKg: 85, activity: "moderate" },
+      { strength: true, goal: "maintain", tier: "econom" },
     ];
     for (const c of cases) {
       const r = generatePlan({ ...base, ...c }, products, solve);
@@ -56,6 +58,7 @@ describe("generatePlan", () => {
       const budget = { none: 0, some: 120, more: 220 }[(c.treats ?? "some") as "none" | "some" | "more"];
       expect(treatKcal, `treats ${JSON.stringify(c)}`).toBeLessThanOrEqual(budget * 1.16 + 1);
       if (c.treats === "more") { expect(treatKcal).toBeGreaterThan(100); for (const id of Object.keys(r.basket)) if (byId.get(id)!.tags.includes("treat")) expect(["zefir", "ice_cream"]).toContain(id); }
+      if (c.strength) expect(avg.protein, `strength ${JSON.stringify(c)}`).toBeGreaterThanOrEqual(1.6 * (c.weightKg ?? base.weightKg) * 0.97);
       const sugarE = Object.entries(r.basket).reduce((a, [id, g]) => { const p = byId.get(id)!; return p.tags.includes("added_sugar") ? a + (p.per100g.sugars * g * 4) / 100 : a; }, 0) / 7 / r.energy.target;
       expect(sugarE, `sugar ${JSON.stringify(c)}`).toBeLessThanOrEqual(0.101);
       console.log(JSON.stringify(c), "kcal", Math.round(avg.kcal), "prot", Math.round(avg.protein), "K", Math.round(avg.potassium), "P", Math.round(avg.phosphorus), "cost", r.costWeek, "short:", r.shortfalls.map((s) => `${s.key}:${(s.fraction * 100).toFixed(0)}%`).join(", "));

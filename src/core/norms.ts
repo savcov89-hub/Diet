@@ -64,6 +64,12 @@ export function buildTargets(p: Profile, energyKcal: number): { targets: Targets
   if (p.age >= 65) { perKg = [1.0, 1.5]; protSources.push("ESPEN_GERI_2022"); }
   if (p.goal === "lose") { perKg = [1.2, 1.8]; protSources.push("LEIDY_2015", "WYCHERLEY_2012", "PROTEIN_WL_2024"); }
   if (p.goal === "gain") { perKg = [1.4, 2.0]; protSources.push("REFALO_2025"); }
+  if (p.strength) {
+    // силовые: плато гипертрофии ≈1,6 г/кг (Morton 2018), ISSN 1,4–2,0; при дефиците у тренированных — выше (Refalo 2025, ISSN)
+    perKg = p.goal === "lose" ? [1.6, 2.2] : [1.6, 2.0];
+    protSources.push("MORTON_2018", "ISSN_2017");
+    if (p.goal === "lose") protSources.push("REFALO_2025");
+  }
   switch (p.ckd) {
     case "s1_2": perKg = [0.8, 1.2]; protSources.push("KDIGO_2024"); break;
     case "s3a": perKg = [0.7, 0.9]; protSources.push("KDIGO_2024", "RU_ALG_2025"); break;

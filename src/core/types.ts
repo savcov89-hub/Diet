@@ -21,6 +21,8 @@ export interface Profile {
   heightCm: number;
   weightKg: number;
   activity: Activity;
+  /** силовые тренировки ≥2 раз в неделю: белок 1,6–2,0 г/кг (Morton 2018, ISSN 2017) */
+  strength: boolean;
   goal: Goal;
   tier: Tier;
   mealsPerDay: 3 | 4 | 5;

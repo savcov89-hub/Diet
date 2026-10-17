@@ -56,6 +56,9 @@ export default function Questionnaire({ profile: p, onChange, onSubmit, busy, pr
           <Field label="Физическая активность" hint="Группы по МР 2.3.1.0253‑21. Энергия считается по Миффлину – Сан Жеору × КФА.">
             <Segmented value={p.activity} onChange={(v) => set("activity", v)} options={(Object.keys(ACTIVITY) as Array<keyof typeof ACTIVITY>).map((k) => ({ value: k, ...ACTIVITY[k] }))} />
           </Field>
+          <Field label="Силовые тренировки" hint="Два и больше раз в неделю с отягощениями. Поднимает норму белка до 1,6–2,0 г/кг (Morton 2018, ISSN 2017).">
+            <Segmented value={p.strength ? "yes" : "no"} onChange={(v) => set("strength", v === "yes")} options={[{ value: "no", label: "Нет" }, { value: "yes", label: "Да, регулярно", hint: "≥2 раз в неделю" }]} />
+          </Field>
           {!valid && <p className="text-sm text-danger">Проверьте значения: возраст 18–100, рост 130–220 см, вес 35–250 кг. Нормы приложения рассчитаны для взрослых.</p>}
           <p className="text-sm text-muted">ИМТ <b className="num">{energy.bmi}</b> · {energy.bmiCategory} · базовый обмен ≈ <b className="num">{energy.bmr}</b> ккал</p>
         </Card>
@@ -160,7 +163,7 @@ export default function Questionnaire({ profile: p, onChange, onSubmit, busy, pr
           <h2>Проверьте данные</h2>
           <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
             <Row k="Профиль" v={`${p.sex === "female" ? "Женщина" : "Мужчина"}, ${p.age} лет, ${p.heightCm} см, ${p.weightKg} кг`} />
-            <Row k="Активность" v={ACTIVITY[p.activity].label} />
+            <Row k="Активность" v={`${ACTIVITY[p.activity].label}${p.strength ? ", силовые тренировки" : ""}`} />
             <Row k="Цель" v={GOAL[p.goal]} />
             <Row k="Корзина" v={TIER[p.tier].label} />
             <Row k="Приёмов пищи" v={String(p.mealsPerDay)} />

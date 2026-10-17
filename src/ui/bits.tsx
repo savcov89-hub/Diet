@@ -13,13 +13,15 @@ export function Chip({ on, onClick, children, title }: { on: boolean; onClick: (
   );
 }
 
-export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+/** input=true — обёртка <label> для одиночного поля; иначе <div>, чтобы клик по подписи не нажимал первую кнопку группы. */
+export function Field({ label, children, hint, input = false }: { label: string; children: ReactNode; hint?: string; input?: boolean }) {
+  const Tag: "label" | "div" = input ? "label" : "div";
   return (
-    <label className="block min-w-0">
+    <Tag className="block min-w-0">
       <span className="label">{label}</span>
       {children}
       {hint && <span className="mt-1.5 block text-xs text-muted">{hint}</span>}
-    </label>
+    </Tag>
   );
 }
 

@@ -53,11 +53,18 @@ export function applyRules(p: Profile, products: Product[]): Restrictions {
     if (pr.tags.some((t) => tags.has(t))) excluded.add(pr.id);
     if (p.dislikes.includes(pr.id)) excluded.add(pr.id);
 
+    const treat = pr.tags.includes("treat");
+    if (treat) {
+      if (p.treats === "none") excluded.add(pr.id);
+      else if (p.favTreats.length > 0 && !p.favTreats.includes(pr.id)) excluded.add(pr.id);
+    }
     if (p.diabetes !== "none") {
-      if (pr.tags.includes("added_sugar")) excluded.add(pr.id);
+      // при диабете сахаросодержащее исключено; из десертов остаётся горький шоколад в малых дозах (ADA: умеренность, не запрет)
+      if (pr.tags.includes("added_sugar") && !(treat && pr.tags.includes("diabetes_ok_treat") && p.treats !== "none")) excluded.add(pr.id);
+      else if (pr.tags.includes("diabetes_ok_treat")) caps[pr.id] = Math.min(caps[pr.id] ?? Infinity, 105);
       else if (pr.tags.includes("high_gi")) caps[pr.id] = Math.min(caps[pr.id] ?? Infinity, Math.round((pr.max_week_g ?? 500) * 0.4));
     }
-    if (p.goal === "lose" && pr.tags.includes("added_sugar")) caps[pr.id] = Math.min(caps[pr.id] ?? Infinity, 70);
+    if (p.goal === "lose" && pr.tags.includes("added_sugar") && !treat) caps[pr.id] = Math.min(caps[pr.id] ?? Infinity, 70);
     if (p.ckd !== "none" && pr.id === "salt_iodized") caps[pr.id] = 20;
   }
 
@@ -97,6 +104,10 @@ export function applyRules(p: Profile, products: Product[]): Restrictions {
   }
   if (p.diabetes !== "none" && p.pregnancy !== "none") {
     warnings.push({ level: "danger", text: "Диабет при беременности ведётся эндокринологом с индивидуальными целями гликемии; этот план — только ориентир по продуктам.", sources: ["RU_ALG_2025"] });
+  }
+
+  if (p.treats !== "none") {
+    warnings.push({ level: "info", text: `Вкусняшки: в рационе заложено ≈${p.treats === "some" ? 120 : 220} ккал/сут на десерт в пределах нормы ВОЗ по добавленным сахарам${p.diabetes !== "none" ? " (при диабете — только горький шоколад 70–85 %)" : ""}. Гибкий контроль без полных запретов связан с лучшим удержанием веса, чем жёсткие правила.`, sources: ["WESTENHOEFER_1999", "TEIXEIRA_2010", "WHO_SUGAR_2015"] });
   }
 
   const bmiV = p.weightKg / Math.pow(p.heightCm / 100, 2);

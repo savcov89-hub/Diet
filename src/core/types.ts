@@ -32,7 +32,13 @@ export interface Profile {
   exclusions: Exclusion[];
   dislikes: string[];
   season: Season;
+  /** вкусняшки: нет / немного (≈120 ккал/сут) / можно (≈220 ккал/сут) */
+  treats: Treats;
+  /** любимые десерты (id продуктов); пусто — любые */
+  favTreats: string[];
 }
+export type Treats = "none" | "some" | "more";
+export const TREAT_KCAL: Record<Treats, number> = { none: 0, some: 120, more: 220 };
 
 export const NUTRIENT_KEYS = [
   "kcal", "protein", "fat", "carbs", "fiber", "sugars", "sat_fat", "trans_fat", "mufa", "pufa", "cholesterol",

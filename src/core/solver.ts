@@ -1,4 +1,4 @@
-import type { NutrientKey, Product, Profile, Targets, Tier } from "./types";
+import { TREAT_KCAL, type NutrientKey, type Product, type Profile, type Targets, type Tier } from "./types";
 import type { MacroNotes } from "./norms";
 import type { Restrictions } from "./rules";
 
@@ -99,7 +99,19 @@ export function buildLp(input: LpInput): { lp: string; vars: string[]; slackKeys
   hardGroupMax("bread", byGroup("bread"), 1400);
   hardGroupMax("liquid_dairy", active.filter((p) => LIQUID_DAIRY.has(p.id)), 3500);
   hardGroupMax("nuts", byGroup("nuts"), 280);
-  hardGroupMax("sweet", byGroup("sweet"), 200);
+  hardGroupMax("sweet", byGroup("sweet"), profile.treats === "none" ? 200 : 900);
+  // Вкусняшки: калории десертов в коридоре вокруг бюджета (мягкий минимум, жёсткий максимум)
+  const treats = active.filter((p) => p.tags.includes("treat"));
+  const treatBudget = TREAT_KCAL[profile.treats] * 7;
+  if (treats.length && treatBudget > 0) {
+    const kcalTerms = treats.map((p): [number, string] => [p.per100g.kcal / 100, v(p)]);
+    rows.push(`max_treat_kcal: ${row(kcalTerms)} <= ${fmt(treatBudget * 1.15)}`);
+    const sKey = "treats";
+    rows.push(`min_treat_kcal: ${row(kcalTerms)} + ${fmt(treatBudget * 0.8)} s_${sKey} >= ${fmt(treatBudget * 0.8)}`);
+    bounds.push(`0 <= s_${sKey} <= 1`);
+    obj.push([PENALTY.low, `s_${sKey}`]);
+    slackKeys.push(sKey);
+  }
   hardGroupMax("fat", byGroup("fat"), 600);
   hardGroupMax("offal", active.filter((p) => p.category === "offal"), restrictions.offalCapWeek);
   hardGroupMax("cheese", byGroup("cheese"), 400);

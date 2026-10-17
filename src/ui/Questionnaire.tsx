@@ -49,9 +49,9 @@ export default function Questionnaire({ profile: p, onChange, onSubmit, busy, pr
             <Segmented value={p.sex} onChange={(v) => set("sex", v)} options={[{ value: "female", label: "Женский" }, { value: "male", label: "Мужской" }]} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Field label="Возраст, лет"><input className="field num" type="number" min={18} max={100} value={p.age} onChange={(e) => set("age", +e.target.value)} /></Field>
-            <Field label="Рост, см"><input className="field num" type="number" min={130} max={220} value={p.heightCm} onChange={(e) => set("heightCm", +e.target.value)} /></Field>
-            <Field label="Вес, кг"><input className="field num" type="number" min={35} max={250} step={0.5} value={p.weightKg} onChange={(e) => set("weightKg", +e.target.value)} /></Field>
+            <Field input label="Возраст, лет"><input className="field num" type="number" min={18} max={100} value={p.age} onChange={(e) => set("age", +e.target.value)} /></Field>
+            <Field input label="Рост, см"><input className="field num" type="number" min={130} max={220} value={p.heightCm} onChange={(e) => set("heightCm", +e.target.value)} /></Field>
+            <Field input label="Вес, кг"><input className="field num" type="number" min={35} max={250} step={0.5} value={p.weightKg} onChange={(e) => set("weightKg", +e.target.value)} /></Field>
           </div>
           <Field label="Физическая активность" hint="Группы по МР 2.3.1.0253‑21. Энергия считается по Миффлину – Сан Жеору × КФА.">
             <Segmented value={p.activity} onChange={(v) => set("activity", v)} options={(Object.keys(ACTIVITY) as Array<keyof typeof ACTIVITY>).map((k) => ({ value: k, ...ACTIVITY[k] }))} />
@@ -69,6 +69,18 @@ export default function Questionnaire({ profile: p, onChange, onSubmit, busy, pr
           <Field label="Уровень корзины" hint="Влияет на набор продуктов и цены. Стоимость для всех трёх уровней покажем в списке покупок.">
             <Segmented value={p.tier} onChange={(v) => set("tier", v)} options={(Object.keys(TIER) as Array<keyof typeof TIER>).map((k) => ({ value: k, ...TIER[k] }))} />
           </Field>
+          <Field label="Вкусняшки" hint="Небольшой десерт в пределах нормы ВОЗ по сахару. Гибкий подход без запретов лучше удерживает вес, чем жёсткие правила. При диабете остаётся только горький шоколад.">
+            <Segmented cols={3} value={p.treats} onChange={(v) => set("treats", v)} options={[{ value: "none", label: "Без сладкого" }, { value: "some", label: "Немного", hint: "≈120 ккал/день" }, { value: "more", label: "Можно", hint: "≈220 ккал/день" }]} />
+          </Field>
+          {p.treats !== "none" && (
+            <Field label="Любимое" hint="Отметьте, что любите, и солвер будет выбирать из этого. Ничего не отмечено — подберёт сам.">
+              <div className="flex flex-wrap gap-1.5">
+                {products.filter((pr) => pr.tags.includes("treat") && pr.prices[p.tier] != null).map((pr) => (
+                  <Chip key={pr.id} on={p.favTreats.includes(pr.id)} onClick={() => set("favTreats", p.favTreats.includes(pr.id) ? p.favTreats.filter((x) => x !== pr.id) : [...p.favTreats, pr.id])}>{pr.name}</Chip>
+                ))}
+              </div>
+            </Field>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Приёмов пищи в день" hint="Интервальное голодание не даёт преимуществ перед обычным дефицитом (BMJ 2025), выбирайте удобный режим.">
               <Segmented cols={3} value={String(p.mealsPerDay) as "3" | "4" | "5"} onChange={(v) => set("mealsPerDay", +v as 3 | 4 | 5)} options={[{ value: "3", label: "3" }, { value: "4", label: "4" }, { value: "5", label: "5" }]} />
@@ -84,12 +96,12 @@ export default function Questionnaire({ profile: p, onChange, onSubmit, busy, pr
         <Card className="grid gap-5">
           {p.sex === "female" && (
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Беременность">
+              <Field input label="Беременность">
                 <select className="field" value={p.pregnancy} onChange={(e) => set("pregnancy", e.target.value as Profile["pregnancy"])}>
                   {Object.entries(PREGNANCY).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </Field>
-              <Field label="Грудное вскармливание">
+              <Field input label="Грудное вскармливание">
                 <select className="field" value={p.lactation} onChange={(e) => set("lactation", e.target.value as Profile["lactation"])}>
                   {Object.entries(LACTATION).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
@@ -97,12 +109,12 @@ export default function Questionnaire({ profile: p, onChange, onSubmit, busy, pr
             </div>
           )}
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Сахарный диабет" hint="При СД исключаются добавленные сахара, ограничиваются продукты с высоким ГИ, углеводы распределяются равномерно; для СД1 показываются ХЕ.">
+            <Field input label="Сахарный диабет" hint="При СД исключаются добавленные сахара, ограничиваются продукты с высоким ГИ, углеводы распределяются равномерно; для СД1 показываются ХЕ.">
               <select className="field" value={p.diabetes} onChange={(e) => set("diabetes", e.target.value as Profile["diabetes"])}>
                 {Object.entries(DIABETES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </Field>
-            <Field label="Хроническая болезнь почек" hint="Стадия по СКФ из заключения нефролога. Меняет белок, калий, фосфор и натрий.">
+            <Field input label="Хроническая болезнь почек" hint="Стадия по СКФ из заключения нефролога. Меняет белок, калий, фосфор и натрий.">
               <select className="field" value={p.ckd} onChange={(e) => set("ckd", e.target.value as Profile["ckd"])}>
                 {Object.entries(CKD).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
@@ -158,6 +170,7 @@ export default function Questionnaire({ profile: p, onChange, onSubmit, busy, pr
             {p.diabetes !== "none" && <Row k="Диабет" v={DIABETES[p.diabetes]} />}
             {p.ckd !== "none" && <Row k="ХБП" v={`${CKD[p.ckd]}${p.hyperkalemia ? ", гиперкалиемия" : ""}`} />}
             <Row k="Исключения" v={p.exclusions.length ? p.exclusions.map((e) => EXCLUSIONS.find((x) => x.id === e)?.label).join(", ") : "нет"} />
+            <Row k="Вкусняшки" v={p.treats === "none" ? "без сладкого" : `${p.treats === "some" ? "≈120" : "≈220"} ккал/день${p.favTreats.length ? ": " + p.favTreats.map((id) => products.find((x) => x.id === id)?.name).filter(Boolean).join(", ") : ""}`} />
             <Row k="Расчёт энергии" v={`${energy.tdee} ккал расход → ${energy.target} ккал цель`} />
           </dl>
           <button type="button" className="btn btn-primary btn-block mt-2 sm:w-auto" disabled={!valid || busy} onClick={onSubmit}>

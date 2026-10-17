@@ -131,6 +131,8 @@ def main():
             src = m.pop("source")
             n.update(m)
             rec["source"] = {"type": "manual", "description": src}
+        if p.get("overrides"):
+            n.update(p["overrides"])
         if p.get("iodine_ug_100g") is not None:
             n["iodine"] = float(p["iodine_ug_100g"])
             rec["iodine_source"] = "Скурихин И.М., Тутельян В.А., 2002 / ГОСТ Р 51574 (ручной ввод)"

@@ -8,6 +8,7 @@ export function defaultProfile(): Profile {
     sex: "female", age: 32, heightCm: 168, weightKg: 70, activity: "low", goal: "maintain", tier: "business", mealsPerDay: 4,
     pregnancy: "none", lactation: "none", ckd: "none", hyperkalemia: false, diabetes: "none", exclusions: [], dislikes: [],
     season: m >= 6 && m <= 9 ? "summer" : "winter",
+    treats: "some", favTreats: [],
   };
 }
 

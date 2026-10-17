@@ -8,7 +8,7 @@ const products = data.products as unknown as Product[];
 
 const base: Profile = {
   sex: "female", age: 34, heightCm: 168, weightKg: 78, activity: "low", goal: "lose", tier: "econom", mealsPerDay: 4,
-  pregnancy: "none", lactation: "none", ckd: "none", hyperkalemia: false, diabetes: "none", exclusions: [], dislikes: [], season: "winter",
+  pregnancy: "none", lactation: "none", ckd: "none", hyperkalemia: false, diabetes: "none", exclusions: [], dislikes: [], season: "winter", treats: "some", favTreats: [],
 };
 
 describe("generatePlan", () => {
@@ -41,6 +41,8 @@ describe("generatePlan", () => {
       { exclusions: ["vegan"], goal: "maintain", tier: "business" },
       { lactation: "m0_6", goal: "lose", tier: "econom" },
       { exclusions: ["lactose", "gluten", "fish"], goal: "lose", tier: "econom", sex: "male" },
+      { treats: "more", favTreats: ["zefir", "ice_cream"], goal: "lose", tier: "business" },
+      { treats: "none", goal: "maintain", tier: "econom" },
     ];
     for (const c of cases) {
       const r = generatePlan({ ...base, ...c }, products, solve);
@@ -50,6 +52,12 @@ describe("generatePlan", () => {
       const comp = compliance(avg, r.targets);
       const highs = comp.filter((x) => x.status === "high").map((x) => `${x.key}=${x.value.toFixed(1)}>${x.max}`);
       expect(highs, JSON.stringify(c)).toEqual([]);
+      const treatKcal = Object.entries(r.basket).reduce((a, [id, g]) => { const p = byId.get(id)!; return p.tags.includes("treat") ? a + (p.per100g.kcal * g) / 100 : a; }, 0) / 7;
+      const budget = { none: 0, some: 120, more: 220 }[(c.treats ?? "some") as "none" | "some" | "more"];
+      expect(treatKcal, `treats ${JSON.stringify(c)}`).toBeLessThanOrEqual(budget * 1.16 + 1);
+      if (c.treats === "more") { expect(treatKcal).toBeGreaterThan(100); for (const id of Object.keys(r.basket)) if (byId.get(id)!.tags.includes("treat")) expect(["zefir", "ice_cream"]).toContain(id); }
+      const sugarE = Object.entries(r.basket).reduce((a, [id, g]) => { const p = byId.get(id)!; return p.tags.includes("added_sugar") ? a + (p.per100g.sugars * g * 4) / 100 : a; }, 0) / 7 / r.energy.target;
+      expect(sugarE, `sugar ${JSON.stringify(c)}`).toBeLessThanOrEqual(0.101);
       console.log(JSON.stringify(c), "kcal", Math.round(avg.kcal), "prot", Math.round(avg.protein), "K", Math.round(avg.potassium), "P", Math.round(avg.phosphorus), "cost", r.costWeek, "short:", r.shortfalls.map((s) => `${s.key}:${(s.fraction * 100).toFixed(0)}%`).join(", "));
     }
   }, T);

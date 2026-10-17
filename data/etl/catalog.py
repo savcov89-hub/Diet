@@ -23,14 +23,14 @@ P = []  # products
 
 def add(id, name, fdc=None, cat=None, tags=(), econ=None, bus=None, prem=None, est=True,
         season="all", roles=("lunch", "dinner"), max_week=None, portion=None, quality=0.5,
-        manual=None, iodine=None, note=None, grp=None, pack=None, min_week=None, buy_hint=None):
+        manual=None, iodine=None, note=None, grp=None, pack=None, min_week=None, buy_hint=None, overrides=None):
     """pack=(граммы, подпись) — единица покупки; min_week — минимальный недельный объём, если продукт выбран;
     buy_hint — совет, как покупать. Если не задано, подставляются значения по умолчанию из build_products.py."""
     P.append(dict(id=id, name=name, fdc_id=fdc, category=cat, tags=list(tags),
                   prices=dict(econom=econ, business=bus, premium=prem), price_estimated=est,
                   season=season, roles=list(roles), max_week_g=max_week, portion_g=portion,
                   quality=quality, manual=manual, iodine_ug_100g=iodine, note=note, group=grp,
-                  pack=pack, min_week_g=min_week, buy_hint=buy_hint))
+                  pack=pack, min_week_g=min_week, buy_hint=buy_hint, overrides=overrides))
 
 # ---------------- Крупы, хлеб, макароны ----------------
 add("buckwheat", "Гречка (ядрица)", 170685, "grain", ("fasting_ok","siberia"), 95, 120, 180, roles=("breakfast","lunch","dinner"), max_week=700, portion=70, quality=0.8, iodine=3.3, grp="cereal", pack=(800, "пачка 800 г"))
@@ -195,11 +195,24 @@ add("sunflower_oil", "Масло подсолнечное", 171025, "fat", ("fas
 add("olive_oil", "Масло оливковое Extra Virgin", 171413, "fat", ("fasting_ok",), None, 1200, 1800, roles=("lunch","dinner"), max_week=210, portion=10, quality=0.9, grp="fat", pack=(500, "бутылка 0,5 л"))
 add("flax_oil", "Масло льняное", 167702, "fat", ("fasting_ok","siberia"), 500, 650, 900, roles=("breakfast","lunch","dinner"), max_week=105, portion=7, quality=0.7, grp="fat", pack=(250, "бутылка 250 мл"))
 add("avocado", "Авокадо", 171705, "fruit", ("fasting_ok",), None, 550, 800, roles=("breakfast","lunch","dinner"), max_week=700, portion=80, quality=0.8, grp="fat", pack=(160, "1 шт ≈160 г"))
-add("honey", "Мёд (алтайский)", 169640, "sweet", ("added_sugar","fasting_ok","high_gi","siberia"), 600, 800, 1200, roles=("breakfast","snack"), max_week=105, portion=15, quality=0.5, grp="sweet", pack=(250, "банка 250 г"))
+add("honey", "Мёд (алтайский)", 169640, "sweet", ("added_sugar","fasting_ok","high_gi","siberia","treat"), 600, 800, 1200, roles=("breakfast","snack"), max_week=105, portion=15, quality=0.5, grp="sweet", pack=(250, "банка 250 г"))
 add("sugar", "Сахар", 169655, "sweet", ("added_sugar","fasting_ok","high_gi"), 78, 90, 120, est=False, roles=("breakfast","snack"), max_week=140, portion=10, quality=0.1, grp="sweet", pack=(1000, "пачка 1 кг"))
-add("dark_chocolate", "Шоколад горький 70–85%", 170273, "sweet", ("added_sugar",), None, 1600, 2500, roles=("snack",), max_week=140, portion=20, quality=0.5, grp="sweet", pack=(90, "плитка 90 г"))
+add("dark_chocolate", "Шоколад горький 70–85%", 170273, "sweet", ("added_sugar","treat","diabetes_ok_treat"), None, 1600, 2500, roles=("snack",), max_week=140, portion=20, quality=0.5, grp="sweet", pack=(90, "плитка 90 г"))
 add("cocoa", "Какао‑порошок", 169593, "other", ("fasting_ok",), 900, 1100, 1600, roles=("breakfast","snack"), max_week=70, portion=8, quality=0.6, pack=(100, "пачка 100 г"))
-add("jam", "Варенье / джем", 169641, "sweet", ("added_sugar","fasting_ok","high_gi"), 350, 450, 700, roles=("breakfast","snack"), max_week=140, portion=20, quality=0.2, grp="sweet", pack=(300, "банка 300 г"))
+add("jam", "Варенье / джем", 169641, "sweet", ("added_sugar","fasting_ok","high_gi","treat"), 350, 450, 700, roles=("breakfast","snack"), max_week=140, portion=20, quality=0.2, grp="sweet", pack=(300, "банка 300 г"))
 add("salt_iodized", "Соль йодированная", 173468, "other", ("fasting_ok",), 35, 45, 90, roles=("lunch","dinner"), max_week=35, portion=3, quality=0.5, iodine=4000, note="ГОСТ: 40±15 мг йода на кг соли", pack=(1000, "пачка 1 кг"))
+
+# ---------------- Вкусняшки (десерты): бюджет ≈100–200 ккал/сут по выбору ----------------
+add("zefir", "Зефир", 167995, "sweet", ("added_sugar","high_gi","treat","fasting_ok"), 350, 450, 700, roles=("snack","lunch"), max_week=300, portion=35, quality=0.3, grp="sweet", pack=(250, "упаковка 250 г"), min_week=70,
+    note="Состав: USDA «marshmallows» как ближайший аналог")
+add("pastila", "Пастила / фруктовые пластинки", 167540, "sweet", ("added_sugar","high_gi","treat","fasting_ok"), 500, 650, 1000, roles=("snack","lunch"), max_week=250, portion=30, quality=0.4, grp="sweet", pack=(200, "упаковка 200 г"), min_week=60)
+add("marmalade", "Мармелад желейный", 167989, "sweet", ("added_sugar","high_gi","treat","fasting_ok"), 350, 450, 700, roles=("snack","lunch"), max_week=250, portion=30, quality=0.2, grp="sweet", pack=(250, "упаковка 250 г"), min_week=60)
+add("halva", "Халва подсолнечная", 167996, "sweet", ("added_sugar","treat","fasting_ok","siberia"), 300, 400, 600, roles=("snack","lunch"), max_week=250, portion=30, quality=0.4, grp="sweet", pack=(250, "упаковка 250 г"), min_week=60, overrides=dict(sugars=35.0), note="Сахар: по Скурихину (в USDA нет данных)")
+add("oat_cookies", "Печенье овсяное", 172725, "sweet", ("added_sugar","gluten","high_gi","treat"), 250, 350, 550, roles=("snack","breakfast"), max_week=300, portion=40, quality=0.3, grp="sweet", pack=(300, "упаковка 300 г"), min_week=80)
+add("gingerbread", "Пряники", 174956, "sweet", ("added_sugar","gluten","high_gi","treat"), 220, 300, 450, roles=("snack","breakfast"), max_week=300, portion=40, quality=0.2, grp="sweet", pack=(350, "упаковка 350 г"), min_week=80)
+add("ice_cream", "Пломбир", 167575, "sweet", ("added_sugar","dairy","lactose","high_gi","treat"), 450, 600, 900, roles=("snack",), max_week=350, portion=70, quality=0.3, grp="sweet", pack=(250, "брикет/стаканчик 250 г"), min_week=70)
+add("milk_chocolate", "Шоколад молочный", 167587, "sweet", ("added_sugar","dairy","high_gi","treat"), 900, 1200, 1800, roles=("snack",), max_week=200, portion=25, quality=0.2, grp="sweet", pack=(90, "плитка 90 г"), min_week=45)
+add("cheesecake_curd", "Сырок творожный глазированный", 167575, "sweet", ("added_sugar","dairy","lactose","treat"), 650, 850, 1200, roles=("snack","breakfast"), max_week=250, portion=45, quality=0.3, grp="sweet", pack=(45, "1 шт 45 г"), min_week=45,
+    note="Состав: USDA «ice cream, vanilla» как ближайший аналог по калорийности и сахару")
 
 CATALOG = P

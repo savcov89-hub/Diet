@@ -102,7 +102,7 @@ export function WeekView({ plan, products }: { plan: PlanResult; products: Produ
                         const p = byId.get(it.productId)!;
                         return (
                           <div key={it.productId} className="rowline text-sm">
-                            <span>{p.name}</span>
+                            <span>{p.name}{p.tags.includes("treat") && <span className="pill ml-1.5 bg-accent-soft text-accent">десерт</span>}</span>
                             <span className="num whitespace-nowrap text-xs text-muted">{fmtG(it.grams)} · {fmtInt((p.per100g.kcal * it.grams) / 100)} ккал</span>
                           </div>
                         );
@@ -209,7 +209,7 @@ const GROUPS: Array<{ title: string; keys: NutrientKey[] }> = [
   { title: "Витамины", keys: ["vit_a", "vit_d", "vit_e", "vit_k", "vit_c", "vit_b1", "vit_b2", "niacin", "vit_b5", "vit_b6", "folate", "vit_b12", "choline"] },
   { title: "Минералы", keys: ["calcium", "phosphorus", "magnesium", "potassium", "iron", "zinc", "iodine", "copper", "manganese", "selenium"] },
 ];
-const GROUP_LABEL: Record<string, string> = { veg_fruit: "овощи и фрукты", veg: "овощи", fruit: "фрукты и ягоды", fish: "рыба", legume: "бобовые", dairy: "молочные", animal_protein: "мясо/птица", veg_variety_cabbage: "капустные", veg_colored: "овощи кроме корнеплодов" };
+const GROUP_LABEL: Record<string, string> = { veg_fruit: "овощи и фрукты", veg: "овощи", fruit: "фрукты и ягоды", fish: "рыба", legume: "бобовые", dairy: "молочные", animal_protein: "мясо/птица", veg_variety_cabbage: "капустные", veg_colored: "овощи кроме корнеплодов", treats: "вкусняшки (бюджет десерта)" };
 
 export function NormsView({ plan, products }: { plan: PlanResult; products: Product[] }) {
   const byId = useById(products);
@@ -219,7 +219,7 @@ export function NormsView({ plan, products }: { plan: PlanResult; products: Prod
   const vegFruit = Object.entries(plan.basket).reduce((a, [id, g]) => { const p = byId.get(id); return p && (isVegetable(p) || isFruit(p)) ? a + g : a; }, 0) / 7;
   const addedSugar = Object.entries(plan.basket).reduce((a, [id, g]) => { const p = byId.get(id); return p && p.tags.includes("added_sugar") ? a + (p.per100g.sugars * g) / 100 : a; }, 0) / 7;
   const fmt = (v: number, k: NutrientKey) => (v >= 100 ? fmtInt(v) : v >= 10 ? v.toFixed(1) : v.toFixed(2)).replace(".", ",") + " " + NUTRIENT_LABELS[k].unit;
-  const low = plan.shortfalls.filter((s) => s.fraction >= 0.1);
+  const low = plan.shortfalls.filter((s) => s.fraction >= 0.1 && s.key !== "treats");
   return (
     <>
       {low.length > 0 && (

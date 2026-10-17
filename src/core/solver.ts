@@ -134,13 +134,23 @@ export function buildLp(input: LpInput): { lp: string; vars: string[]; slackKeys
   shareCap("legume", legumes, 0.6);
   shareCap("dairy", dairy, 0.6);
 
+  // Полунепрерывные объёмы: продукт либо не покупается, либо не меньше min_week_g (иначе «40 г рыбы для селена»)
+  const binaries: string[] = [];
   for (const p of active) {
     const cap = Math.min(p.max_week_g ?? 1000, restrictions.caps[p.id] ?? Infinity);
     bounds.push(`0 <= ${v(p)} <= ${fmt(cap)}`);
+    const minW = Math.min(p.min_week_g ?? 0, cap);
+    if (minW > 0) {
+      const y = `y_${p.id}`;
+      binaries.push(y);
+      rows.push(`sc_hi_${p.id}: ${v(p)} - ${fmt(cap)} ${y} <= 0`);
+      rows.push(`sc_lo_${p.id}: ${v(p)} - ${fmt(minW)} ${y} >= 0`);
+    }
   }
   bounds.push(`0 <= x__zero <= 0`);
 
-  const lp = ["Minimize", ` obj: ${row(obj)}`, "Subject To", ...rows.map((r) => ` ${r}`), "Bounds", ...bounds.map((b) => ` ${b}`), "End"].join("\n");
+  const lp = ["Minimize", ` obj: ${row(obj)}`, "Subject To", ...rows.map((r) => ` ${r}`), "Bounds", ...bounds.map((b) => ` ${b}`),
+    ...(binaries.length ? ["Binary", ` ${binaries.join(" ")}`] : []), "End"].join("\n");
   return { lp, vars: active.map(v), slackKeys };
 }
 

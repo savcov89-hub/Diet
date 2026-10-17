@@ -81,13 +81,45 @@ def load_usda():
     return foods, resolved, nut
 
 
+LOOSE = {"vegetable": 100, "fruit": 100}
+
+
+def default_pack(p):
+    """Единица покупки по умолчанию: весовые овощи/фрукты — шаг 100 г, остальное — порция × 4."""
+    if p["category"] in LOOSE:
+        return (LOOSE[p["category"]], "на развес")
+    return (max(100, int(round((p.get("portion") or 100) * 4 / 50.0)) * 50), "упаковка")
+
+
+def default_min_week(p, pack_g):
+    """Минимальный недельный объём, если продукт выбран: иначе солвер кладёт 40 г рыбы «для селена»."""
+    cat, grp = p["category"], p.get("group")
+    if cat in ("fish", "seafood"): return 350
+    if cat in ("meat", "poultry"): return 400
+    if cat == "offal": return 100
+    if cat == "vegetable": return 20 if p["id"] in ("dill", "parsley", "garlic") else 200
+    if cat == "fruit": return 50 if grp in ("dried_fruit", "berry") else 300
+    if grp == "cereal": return 150
+    if grp == "bread": return 150
+    if grp == "legume": return 150
+    if cat == "dairy": return 100 if grp in ("cheese", "dairy_fat") else 400
+    if cat == "egg": return 200
+    if cat == "nut": return 50
+    if cat == "fat": return 40
+    if cat == "sweet": return 40
+    return min(pack_g, 20)
+
+
 def main():
     ensure_usda()
     foods, resolved, nut = load_usda()
     out = []
     for p in CATALOG:
         rec = {k: p[k] for k in ("id", "name", "category", "tags", "prices", "price_estimated",
-                                 "season", "roles", "max_week_g", "portion_g", "quality", "group", "note")}
+                                 "season", "roles", "max_week_g", "portion_g", "quality", "group", "note", "buy_hint")}
+        pack = p.get("pack") or default_pack(p)
+        rec["pack_g"], rec["pack_label"] = pack
+        rec["min_week_g"] = p.get("min_week_g") or default_min_week(p, pack[0])
         n = {k: 0.0 for k in NUTRIENTS}
         if p["id"] in resolved:
             fid = resolved[p["id"]]

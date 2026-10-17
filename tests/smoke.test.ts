@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+
+const T = 120_000;
 import data from "../src/data/products.json";
 import { generatePlan, getSolver, weekAverage, compliance, type Product, type Profile } from "../src/core";
 
@@ -26,7 +28,9 @@ describe("generatePlan", () => {
     expect(highs).toEqual([]);
     console.log("econom cost/week", r.costWeek, "items", Object.keys(r.basket).length, "shortfalls", r.shortfalls.map((s) => `${s.key}:${(s.fraction * 100).toFixed(0)}%`).join(", "));
     console.log(Object.entries(r.basket).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}=${v}`).join(" "));
-  });
+    // минимальные закупочные объёмы соблюдены
+    for (const [id, g] of Object.entries(r.basket)) { const p = byId.get(id)!; expect(g, id).toBeGreaterThanOrEqual(Math.min(p.min_week_g, p.max_week_g ?? 1e9) - 0.6); }
+  }, T);
 
   it("handles pregnancy t3, CKD s3b, diabetes t1, vegan", async () => {
     const solve = await getSolver();
@@ -48,5 +52,5 @@ describe("generatePlan", () => {
       expect(highs, JSON.stringify(c)).toEqual([]);
       console.log(JSON.stringify(c), "kcal", Math.round(avg.kcal), "prot", Math.round(avg.protein), "K", Math.round(avg.potassium), "P", Math.round(avg.phosphorus), "cost", r.costWeek, "short:", r.shortfalls.map((s) => `${s.key}:${(s.fraction * 100).toFixed(0)}%`).join(", "));
     }
-  });
+  }, T);
 });

@@ -42,10 +42,14 @@ export function applyRules(p: Profile, products: Product[]): Restrictions {
     if (pr.prices[p.tier] == null) { excluded.add(pr.id); continue; }
     if (pr.season === "summer" && p.season === "winter") {
       // зимой сезонные овощи/ягоды остаются (тепличные/замороженные), но реже; строго летние — исключаем
-      if (pr.tags.includes("summer_only")) excluded.add(pr.id);
-      else caps[pr.id] = Math.round((pr.max_week_g ?? 500) * 0.4);
+      const cap = Math.round((pr.max_week_g ?? 500) * 0.4);
+      if (pr.tags.includes("summer_only") || cap < pr.min_week_g) excluded.add(pr.id);
+      else caps[pr.id] = cap;
     }
-    if (pr.season === "winter" && p.season === "summer") caps[pr.id] = Math.round((pr.max_week_g ?? 500) * 0.5);
+    if (pr.season === "winter" && p.season === "summer") {
+      const cap = Math.round((pr.max_week_g ?? 500) * 0.5);
+      if (cap < pr.min_week_g) excluded.add(pr.id); else caps[pr.id] = cap;
+    }
     if (pr.tags.some((t) => tags.has(t))) excluded.add(pr.id);
     if (p.dislikes.includes(pr.id)) excluded.add(pr.id);
 

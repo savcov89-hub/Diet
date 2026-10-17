@@ -94,6 +94,12 @@ export interface Product {
   quality: number;
   group: string | null;
   note: string | null;
+  /** единица покупки: граммы и подпись («пачка 800 г», «тушка ≈1,2 кг», «на развес») */
+  pack_g: number;
+  pack_label: string;
+  /** минимальный недельный объём, если продукт попал в корзину */
+  min_week_g: number;
+  buy_hint: string | null;
   source?: { type: string; fdc_id?: number; description: string; url?: string };
   iodine_source?: string;
   per100g: Nutrients;

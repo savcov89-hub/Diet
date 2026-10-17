@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --bg: #f4f6f3;
+  --surface: #ffffff;
+  --surface-2: #eaf0ea;
+  --text: #16211c;
+  --muted: #5d6b64;
+  --border: #d7e0d9;
+  --accent: #2f7d5c;
+  --accent-strong: #22604a;
+  --accent-soft: #dcefe4;
+  --ok: #2f7d5c;
+  --warn: #b7791f;
+  --warn-soft: #fbf1dd;
+  --danger: #b3453b;
+  --danger-soft: #f9e3e0;
+  --info: #3b6ea8;
+  --info-soft: #e1ebf7;
+  --shadow: 0 1px 2px rgba(22, 33, 28, 0.06), 0 8px 24px -12px rgba(22, 33, 28, 0.18);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1613; --surface: #17211c; --surface-2: #1f2c25; --text: #e8eee9; --muted: #9aa8a0; --border: #2a3730;
+    --accent: #5fb58f; --accent-strong: #7ccba7; --accent-soft: #1d3a2d; --ok: #5fb58f; --warn: #e0a84a; --warn-soft: #3a2f16;
+    --danger: #e07a70; --danger-soft: #3f2220; --info: #7fa9e0; --info-soft: #1d2c40; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1613; --surface: #17211c; --surface-2: #1f2c25; --text: #e8eee9; --muted: #9aa8a0; --border: #2a3730;
+  --accent: #5fb58f; --accent-strong: #7ccba7; --accent-soft: #1d3a2d; --ok: #5fb58f; --warn: #e0a84a; --warn-soft: #3a2f16;
+  --danger: #e07a70; --danger-soft: #3f2220; --info: #7fa9e0; --info-soft: #1d2c40; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html { color-scheme: light dark; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; box-shadow: var(--shadow); }
+.btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[.98] disabled:opacity-50 disabled:pointer-events-none; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-strong); }
+.btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--surface-2); }
+.chip { @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium cursor-pointer select-none transition; border-color: var(--border); background: var(--surface); }
+.chip[data-on="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+.field { @apply w-full rounded-xl border px-3 py-2.5 text-base outline-none transition; background: var(--surface); border-color: var(--border); color: var(--text); }
+.field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.label { @apply block text-xs font-semibold uppercase tracking-wide mb-1.5; color: var(--muted); }
+.tabbtn { @apply rounded-xl px-3 py-2 text-sm font-semibold transition; color: var(--muted); }
+.tabbtn[data-on="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.bar { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: 999px; }
+@media print {
+  body { background: #fff; color: #000; }
+  .no-print { display: none !important; }
+  .card { box-shadow: none; break-inside: avoid; }
+  .print-block { break-inside: avoid; }
+}

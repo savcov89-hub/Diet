@@ -1,0 +1,202 @@
+# -*- coding: utf-8 -*-
+"""
+Каталог продуктов для Новосибирска.
+
+Каждая запись: русское название, источник состава (USDA SR Legacy fdc_id либо ручной ввод),
+категория, теги непереносимостей/ограничений, цены по трём уровням корзины (руб/кг),
+сезонность, роли в приёмах пищи и лимиты на неделю для «съедобности» рациона.
+
+Цены: ориентир октябрь 2026, Новосибирск. Источники: Новосибирскстат (картофель 43 руб/кг,
+сентябрь 2026), ценовой замер НГС 13.10.2026 (Центральный рынок и «Магнит»), Росстат по НСО
+(говядина ~800, куры ~233, яйца ~97 руб/дес, сыр ~900, масло ~1090, июнь 2026). Остальное —
+экспертная оценка по полкам «Ярче!», «Мария‑Ра», «Лента», «ВкусВилл»; помечено est=True.
+None в цене = продукт в этом уровне корзины не используется.
+"""
+
+# tags:
+#  dairy, lactose, gluten, egg, fish, seafood, nuts, peanut, soy, pork, red_meat, poultry, meat (любое мясо),
+#  added_sugar, high_gi, ultra_processed, pregnancy_avoid, raw_fish, offal, siberia, fasting_ok (постный)
+# roles: breakfast, lunch, dinner, snack
+# season: all | summer (июнь–сентябрь дешевле/доступнее) | winter
+
+P = []  # products
+
+def add(id, name, fdc=None, cat=None, tags=(), econ=None, bus=None, prem=None, est=True,
+        season="all", roles=("lunch", "dinner"), max_week=None, portion=None, quality=0.5,
+        manual=None, iodine=None, note=None, grp=None):
+    P.append(dict(id=id, name=name, fdc_id=fdc, category=cat, tags=list(tags),
+                  prices=dict(econom=econ, business=bus, premium=prem), price_estimated=est,
+                  season=season, roles=list(roles), max_week_g=max_week, portion_g=portion,
+                  quality=quality, manual=manual, iodine_ug_100g=iodine, note=note, group=grp))
+
+# ---------------- Крупы, хлеб, макароны ----------------
+add("buckwheat", "Гречка (ядрица)", 170685, "grain", ("fasting_ok","siberia"), 95, 120, 180, roles=("breakfast","lunch","dinner"), max_week=700, portion=70, quality=0.8, iodine=3.3, grp="cereal")
+add("oats", "Овсяные хлопья (долгой варки)", 173904, "grain", ("gluten","fasting_ok"), 80, 110, 200, roles=("breakfast",), max_week=560, portion=60, quality=0.8, iodine=4.5, grp="cereal")
+add("barley_pearl", "Перловка", 170284, "grain", ("gluten","fasting_ok"), 55, 75, 120, max_week=420, portion=70, quality=0.6, grp="cereal")
+add("rice_white", "Рис белый", 169756, "grain", ("fasting_ok","high_gi"), 110, 140, 220, max_week=420, portion=70, quality=0.4, grp="cereal")
+add("rice_brown", "Рис бурый", 169703, "grain", ("fasting_ok",), None, 190, 320, max_week=420, portion=70, quality=0.7, grp="cereal")
+add("millet", "Пшено", 169702, "grain", ("fasting_ok",), 65, 85, 130, roles=("breakfast","lunch","dinner"), max_week=420, portion=70, quality=0.6, grp="cereal")
+add("pasta", "Макароны из твёрдых сортов", 169736, "grain", ("gluten","fasting_ok"), 90, 140, 260, max_week=420, portion=80, quality=0.5, grp="cereal")
+add("bulgur", "Булгур", 170688, "grain", ("gluten","fasting_ok"), None, 160, 260, max_week=350, portion=70, quality=0.7, grp="cereal")
+add("quinoa", "Киноа", 168874, "grain", ("fasting_ok",), None, None, 650, max_week=350, portion=60, quality=0.8, grp="cereal")
+add("oat_bran", "Отруби овсяные", 168872, "grain", ("gluten","fasting_ok"), 160, 200, 300, roles=("breakfast",), max_week=140, portion=20, quality=0.7)
+add("wheat_bran", "Отруби пшеничные", 169722, "grain", ("gluten","fasting_ok"), 100, 140, 220, roles=("breakfast",), max_week=140, portion=15, quality=0.6)
+add("bread_rye", "Хлеб ржано‑пшеничный («Бородинский»)", 172684, "bread", ("gluten","fasting_ok"), 90, 140, 320, roles=("breakfast","lunch","dinner","snack"), max_week=1050, portion=60, quality=0.6, grp="bread")
+add("bread_wholewheat", "Хлеб цельнозерновой", 172688, "bread", ("gluten","fasting_ok"), 150, 220, 420, roles=("breakfast","lunch","dinner","snack"), max_week=1050, portion=60, quality=0.7, grp="bread")
+add("bread_white", "Хлеб пшеничный (батон)", 174924, "bread", ("gluten","fasting_ok","high_gi"), 77, 110, 180, roles=("breakfast","lunch","dinner","snack"), max_week=500, portion=50, quality=0.3, grp="bread")
+add("crispbread_rye", "Хлебцы ржаные", 172744, "bread", ("gluten","fasting_ok"), 300, 400, 600, roles=("breakfast","snack"), max_week=210, portion=20, quality=0.6, grp="bread")
+
+# ---------------- Бобовые, соя ----------------
+add("lentils", "Чечевица", 172420, "legume", ("fasting_ok",), 180, 220, 330, max_week=420, portion=70, quality=0.8, grp="legume")
+add("peas_split", "Горох колотый", 172428, "legume", ("fasting_ok",), 75, 95, 150, max_week=420, portion=70, quality=0.7, grp="legume")
+add("beans_white", "Фасоль белая (сухая)", 175202, "legume", ("fasting_ok",), 200, 260, 380, max_week=350, portion=70, quality=0.7, grp="legume")
+add("beans_red", "Фасоль красная (сухая)", 175193, "legume", ("fasting_ok",), 200, 260, 380, max_week=350, portion=70, quality=0.7, grp="legume")
+add("chickpeas", "Нут", 173756, "legume", ("fasting_ok",), 190, 240, 350, max_week=350, portion=70, quality=0.7, grp="legume")
+add("peas_green_frozen", "Горошек зелёный замороженный", 170016, "vegetable", ("fasting_ok",), 190, 240, 350, max_week=500, portion=100, quality=0.6, grp="veg")
+add("tofu", "Тофу", 172475, "legume", ("soy","fasting_ok"), None, 520, 700, max_week=600, portion=120, quality=0.7, grp="protein_plant")
+
+# ---------------- Овощи ----------------
+add("potato", "Картофель", 170026, "vegetable", ("fasting_ok","high_gi"), 45, 60, 110, est=False, roles=("lunch","dinner"), max_week=1750, portion=200, quality=0.5, iodine=5, grp="veg_starch")
+add("cabbage", "Капуста белокочанная", 169975, "vegetable", ("fasting_ok",), 30, 45, 90, est=False, max_week=1000, portion=150, quality=0.7, grp="veg")
+add("sauerkraut", "Капуста квашеная", 169279, "vegetable", ("fasting_ok","siberia"), 180, 240, 350, max_week=700, portion=100, quality=0.7, grp="veg")
+add("carrot", "Морковь", 170393, "vegetable", ("fasting_ok",), 30, 50, 90, est=False, roles=("lunch","dinner","snack"), max_week=1050, portion=100, quality=0.7, grp="veg")
+add("beet", "Свёкла", 169145, "vegetable", ("fasting_ok",), 38, 55, 95, est=False, max_week=1050, portion=120, quality=0.7, grp="veg")
+add("onion", "Лук репчатый", 170000, "vegetable", ("fasting_ok",), 35, 50, 90, est=False, max_week=450, portion=50, quality=0.5, grp="veg")
+add("garlic", "Чеснок", 169230, "vegetable", ("fasting_ok",), 300, 400, 600, max_week=70, portion=8, quality=0.6, grp="veg")
+add("tomato", "Томаты", 170457, "vegetable", ("fasting_ok",), 210, 300, 450, est=False, season="summer", roles=("breakfast","lunch","dinner"), max_week=1050, portion=120, quality=0.7, grp="veg")
+add("cucumber", "Огурцы", 168409, "vegetable", ("fasting_ok",), 190, 260, 400, season="summer", roles=("breakfast","lunch","dinner"), max_week=1050, portion=120, quality=0.6, grp="veg")
+add("pepper_red", "Перец сладкий", 170108, "vegetable", ("fasting_ok",), 260, 330, 480, season="summer", max_week=700, portion=100, quality=0.8, grp="veg")
+add("pumpkin", "Тыква", 168448, "vegetable", ("fasting_ok","siberia"), 60, 90, 160, roles=("breakfast","lunch","dinner"), max_week=1050, portion=150, quality=0.7, grp="veg")
+add("zucchini", "Кабачок", 169291, "vegetable", ("fasting_ok",), 130, 180, 300, season="summer", max_week=1050, portion=150, quality=0.6, grp="veg")
+add("broccoli", "Брокколи (замороженная)", 169968, "vegetable", ("fasting_ok",), 320, 400, 600, max_week=700, portion=150, quality=0.9, grp="veg")
+add("cauliflower", "Цветная капуста", 169986, "vegetable", ("fasting_ok",), 250, 320, 500, max_week=700, portion=150, quality=0.8, grp="veg")
+add("spinach", "Шпинат (замороженный)", 168462, "vegetable", ("fasting_ok",), None, 350, 550, max_week=500, portion=100, quality=0.9, grp="veg")
+add("lettuce", "Салат листовой", 169249, "vegetable", ("fasting_ok",), None, 500, 800, roles=("lunch","dinner"), max_week=350, portion=50, quality=0.7, grp="veg")
+add("dill", "Укроп", 172233, "vegetable", ("fasting_ok","siberia"), 500, 700, 1000, max_week=140, portion=10, quality=0.6, grp="veg")
+add("parsley", "Петрушка", 170416, "vegetable", ("fasting_ok",), 500, 700, 1000, max_week=140, portion=10, quality=0.6, grp="veg")
+add("mushrooms_white", "Шампиньоны", 169251, "vegetable", ("fasting_ok",), 280, 350, 500, max_week=500, portion=120, quality=0.6, grp="veg")
+add("chanterelle", "Лисички (сибирские, свежие/замороженные)", 168422, "vegetable", ("fasting_ok","siberia"), None, 600, 900, season="summer", max_week=400, portion=120, quality=0.7, grp="veg")
+add("fern", "Папоротник (орляк, солёный/свежий)", 169405, "vegetable", ("fasting_ok","siberia"), None, 450, 700, max_week=300, portion=100, quality=0.6, grp="veg")
+add("radish", "Редис", 169276, "vegetable", ("fasting_ok",), 160, 220, 350, season="summer", max_week=350, portion=60, quality=0.5, grp="veg")
+add("celery", "Сельдерей (стебель)", 169988, "vegetable", ("fasting_ok",), None, 300, 450, max_week=350, portion=60, quality=0.6, grp="veg")
+add("leek", "Лук‑порей", 169246, "vegetable", ("fasting_ok",), None, 350, 500, max_week=300, portion=60, quality=0.6, grp="veg")
+add("turnip", "Репа", 170465, "vegetable", ("fasting_ok","siberia"), 90, 130, 220, max_week=500, portion=120, quality=0.5, grp="veg")
+add("eggplant", "Баклажан", 169228, "vegetable", ("fasting_ok",), 200, 280, 420, season="summer", max_week=500, portion=150, quality=0.6, grp="veg")
+add("green_beans", "Стручковая фасоль (замороженная)", 169961, "vegetable", ("fasting_ok",), 250, 320, 480, max_week=600, portion=150, quality=0.7, grp="veg")
+add("kelp", "Морская капуста (ламинария)", 168457, "vegetable", ("fasting_ok","seafood"), 250, 350, 600, max_week=300, portion=50, quality=0.7, iodine=300, grp="veg")
+add("corn_sweet", "Кукуруза сладкая", 169998, "vegetable", ("fasting_ok",), 180, 240, 350, season="summer", max_week=400, portion=100, quality=0.5, grp="veg")
+add("jerusalem_artichoke", "Топинамбур", 169236, "vegetable", ("fasting_ok","siberia"), None, None, 350, max_week=400, portion=100, quality=0.6, grp="veg")
+
+# ---------------- Фрукты, ягоды, сухофрукты ----------------
+add("apple", "Яблоки", 171688, "fruit", ("fasting_ok",), 110, 170, 260, est=False, roles=("breakfast","snack"), max_week=1750, portion=180, quality=0.7, grp="fruit")
+add("pear", "Груши", 169118, "fruit", ("fasting_ok",), 180, 240, 380, roles=("breakfast","snack"), max_week=1050, portion=170, quality=0.6, grp="fruit")
+add("banana", "Бананы", 173944, "fruit", ("fasting_ok","high_gi"), 140, 170, 260, roles=("breakfast","snack"), max_week=1050, portion=120, quality=0.5, grp="fruit")
+add("orange", "Апельсины", 169097, "fruit", ("fasting_ok",), 170, 220, 350, roles=("breakfast","snack"), max_week=1050, portion=180, quality=0.7, grp="fruit")
+add("tangerine", "Мандарины", 169105, "fruit", ("fasting_ok",), 190, 250, 380, season="winter", roles=("breakfast","snack"), max_week=1050, portion=150, quality=0.6, grp="fruit")
+add("lemon", "Лимон", 167746, "fruit", ("fasting_ok",), 200, 260, 380, roles=("lunch","dinner"), max_week=200, portion=20, quality=0.5)
+add("grapes", "Виноград", 174683, "fruit", ("fasting_ok","high_gi"), None, 350, 550, season="summer", roles=("snack",), max_week=700, portion=120, quality=0.5, grp="fruit")
+add("kiwi", "Киви", 168153, "fruit", ("fasting_ok",), None, 300, 450, roles=("breakfast","snack"), max_week=700, portion=120, quality=0.7, grp="fruit")
+add("strawberry", "Клубника", 167762, "fruit", ("fasting_ok","summer_only"), None, 450, 900, season="summer", roles=("breakfast","snack"), max_week=700, portion=120, quality=0.7, grp="berry")
+add("blueberry", "Черника/голубика (замороженная)", 173949, "fruit", ("fasting_ok","siberia"), None, 650, 1100, roles=("breakfast","snack"), max_week=700, portion=80, quality=0.9, grp="berry")
+add("cranberry", "Клюква (замороженная)", 171722, "fruit", ("fasting_ok","siberia"), 450, 550, 800, roles=("breakfast","snack"), max_week=500, portion=60, quality=0.8, grp="berry")
+add("lingonberry", "Брусника (замороженная)", 171722, "fruit", ("fasting_ok","siberia"), 450, 550, 850, roles=("breakfast","snack"), max_week=500, portion=60, quality=0.8, grp="berry", note="Состав: USDA «Cranberries, raw» как ближайший аналог")
+add("raspberry", "Малина (замороженная)", 167755, "fruit", ("fasting_ok","siberia"), None, 600, 1000, roles=("breakfast","snack"), max_week=500, portion=80, quality=0.8, grp="berry")
+add("blackcurrant", "Смородина чёрная (замороженная)", 173963, "fruit", ("fasting_ok","siberia"), 350, 450, 700, roles=("breakfast","snack"), max_week=500, portion=80, quality=0.9, grp="berry")
+add("cherry", "Вишня/черешня", 171719, "fruit", ("fasting_ok","summer_only"), None, 450, 800, season="summer", roles=("snack",), max_week=500, portion=120, quality=0.6, grp="fruit")
+add("apricot", "Абрикосы", 171697, "fruit", ("fasting_ok","summer_only"), None, 300, 500, season="summer", roles=("snack",), max_week=700, portion=150, quality=0.7, grp="fruit")
+add("plum", "Слива", 169949, "fruit", ("fasting_ok","summer_only"), 160, 220, 350, season="summer", roles=("snack",), max_week=700, portion=150, quality=0.6, grp="fruit")
+add("watermelon", "Арбуз", 167765, "fruit", ("fasting_ok","high_gi","summer_only"), 45, 60, 100, season="summer", roles=("snack",), max_week=1400, portion=300, quality=0.4, grp="fruit")
+add("prunes", "Чернослив", 168162, "fruit", ("fasting_ok",), 500, 650, 950, roles=("breakfast","snack"), max_week=210, portion=30, quality=0.6, grp="dried_fruit")
+add("raisins", "Изюм", 168165, "fruit", ("fasting_ok","high_gi"), 350, 450, 700, roles=("breakfast","snack"), max_week=140, portion=25, quality=0.4, grp="dried_fruit")
+add("dried_apricots", "Курага", 173941, "fruit", ("fasting_ok",), 600, 750, 1100, roles=("breakfast","snack"), max_week=210, portion=30, quality=0.6, grp="dried_fruit")
+add("dates", "Финики", 171726, "fruit", ("fasting_ok","high_gi"), None, 500, 800, roles=("snack",), max_week=140, portion=30, quality=0.4, grp="dried_fruit")
+add("seabuckthorn", "Облепиха (замороженная)", None, "fruit", ("fasting_ok","siberia"), 350, 450, 700, roles=("breakfast","snack"), max_week=350, portion=50, quality=0.9, grp="berry",
+    manual=dict(source="Скурихин И.М., Тутельян В.А. Химический состав российских пищевых продуктов, 2002 (ручной ввод, частичный набор нутриентов)",
+                kcal=82, protein=1.2, fat=5.4, carbs=5.7, fiber=2.0, vit_c=200, vit_e=5.0, vit_a=250, vit_k=0, potassium=193, calcium=22, magnesium=30, iron=1.4, phosphorus=9, sugars=5.7, folate=9, vit_b1=0.03, vit_b2=0.05, vit_b6=0.11, niacin=0.4))
+
+# ---------------- Орехи, семена ----------------
+add("pine_nuts", "Кедровые орехи (очищенные)", 170591, "nut", ("nuts","fasting_ok","siberia"), None, 2800, 3500, roles=("breakfast","snack"), max_week=140, portion=20, quality=0.9, grp="nuts")
+add("walnuts", "Грецкие орехи", 170187, "nut", ("nuts","fasting_ok"), 900, 1100, 1500, roles=("breakfast","snack"), max_week=210, portion=30, quality=0.9, grp="nuts")
+add("almonds", "Миндаль", 170567, "nut", ("nuts","fasting_ok"), None, 1300, 1700, roles=("breakfast","snack"), max_week=210, portion=30, quality=0.9, grp="nuts")
+add("hazelnuts", "Фундук", 170581, "nut", ("nuts","fasting_ok"), None, 1200, 1600, roles=("snack",), max_week=140, portion=30, quality=0.8, grp="nuts")
+add("cashew", "Кешью", 170162, "nut", ("nuts","fasting_ok"), None, None, 1600, roles=("snack",), max_week=140, portion=30, quality=0.7, grp="nuts")
+add("peanuts", "Арахис (сырой/жареный без соли)", 172430, "nut", ("peanut","fasting_ok"), 350, 450, 650, roles=("snack",), max_week=140, portion=30, quality=0.5, grp="nuts")
+add("sunflower_seeds", "Семечки подсолнечника (очищенные)", 170562, "nut", ("fasting_ok","siberia"), 220, 300, 450, roles=("breakfast","snack"), max_week=140, portion=20, quality=0.6, grp="nuts")
+add("flaxseed", "Семена льна", 169414, "nut", ("fasting_ok","siberia"), 180, 250, 400, roles=("breakfast",), max_week=140, portion=15, quality=0.8, grp="nuts")
+add("pumpkin_seeds", "Семена тыквы", 170556, "nut", ("fasting_ok",), None, 750, 1100, roles=("breakfast","snack"), max_week=140, portion=20, quality=0.8, grp="nuts")
+add("chia", "Семена чиа", 170554, "nut", ("fasting_ok",), None, None, 1200, roles=("breakfast",), max_week=105, portion=15, quality=0.7, grp="nuts")
+add("sesame", "Кунжут", 170150, "nut", ("fasting_ok",), 400, 500, 750, roles=("breakfast","lunch","dinner"), max_week=70, portion=10, quality=0.7, grp="nuts")
+
+# ---------------- Молочные продукты, яйца ----------------
+add("milk_25", "Молоко 2,5%", 172205, "dairy", ("dairy","lactose"), 70, 110, 160, est=False, roles=("breakfast","snack"), max_week=2100, portion=200, quality=0.6, iodine=9, grp="dairy")
+add("milk_32", "Молоко 3,2%", 172217, "dairy", ("dairy","lactose"), 80, 120, 180, roles=("breakfast","snack"), max_week=2100, portion=200, quality=0.5, iodine=9, grp="dairy")
+add("kefir", "Кефир 1–2,5%", 170904, "dairy", ("dairy","lactose"), 95, 130, 190, roles=("breakfast","snack","dinner"), max_week=2100, portion=250, quality=0.7, iodine=9, grp="dairy")
+add("yogurt_plain", "Йогурт натуральный без сахара", 170886, "dairy", ("dairy","lactose"), 250, 350, 550, roles=("breakfast","snack"), max_week=1400, portion=150, quality=0.7, grp="dairy")
+add("yogurt_greek", "Йогурт греческий 2–4%", 170903, "dairy", ("dairy","lactose"), None, 500, 800, roles=("breakfast","snack"), max_week=1050, portion=150, quality=0.8, grp="dairy")
+add("cottage_5", "Творог 5%", 172182, "dairy", ("dairy","lactose"), 500, 650, 950, est=False, roles=("breakfast","snack","dinner"), max_week=1400, portion=150, quality=0.8, grp="dairy")
+add("cottage_9", "Творог 9%", 172179, "dairy", ("dairy","lactose"), 520, 680, 1000, roles=("breakfast","snack","dinner"), max_week=1050, portion=150, quality=0.6, grp="dairy")
+add("sour_cream_15", "Сметана 15%", 171256, "dairy", ("dairy","lactose"), 300, 380, 550, est=False, roles=("lunch","dinner"), max_week=350, portion=25, quality=0.5, grp="dairy_fat")
+add("sour_cream_20", "Сметана 20%", 171257, "dairy", ("dairy","lactose"), 320, 400, 600, roles=("lunch","dinner"), max_week=280, portion=25, quality=0.4, grp="dairy_fat")
+add("cheese_semihard", "Сыр полутвёрдый (Российский/Гауда)", 171241, "dairy", ("dairy",), 650, 900, 1400, est=False, roles=("breakfast","snack"), max_week=350, portion=30, quality=0.6, iodine=11, grp="cheese")
+add("cheese_brynza", "Брынза", 173420, "dairy", ("dairy","pregnancy_avoid"), None, 700, 1100, roles=("breakfast","lunch","dinner"), max_week=280, portion=40, quality=0.5, grp="cheese")
+add("mozzarella", "Моцарелла", 170845, "dairy", ("dairy",), None, 900, 1400, roles=("lunch","dinner"), max_week=280, portion=50, quality=0.6, grp="cheese")
+add("ricotta", "Рикотта", 171248, "dairy", ("dairy","lactose"), None, None, 900, roles=("breakfast","snack"), max_week=350, portion=80, quality=0.7, grp="cheese")
+add("brie", "Бри/камамбер", 172177, "dairy", ("dairy","pregnancy_avoid"), None, None, 1800, roles=("snack",), max_week=140, portion=30, quality=0.5, grp="cheese")
+add("butter", "Масло сливочное 82,5%", 173430, "fat", ("dairy",), 780, 1000, 1400, est=False, roles=("breakfast","lunch","dinner"), max_week=140, portion=10, quality=0.4, grp="fat")
+add("egg", "Яйца куриные", 171287, "egg", ("egg",), 160, 200, 300, est=False, roles=("breakfast","lunch","dinner","snack"), max_week=600, portion=110, quality=0.8, iodine=20, grp="egg", note="Цена пересчитана: десяток ≈ 600 г")
+add("egg_quail", "Яйца перепелиные", 172191, "egg", ("egg",), None, None, 900, roles=("breakfast","snack"), max_week=200, portion=50, quality=0.6, grp="egg")
+
+# ---------------- Мясо, птица, субпродукты ----------------
+add("chicken_whole", "Курица (тушка)", 171447, "poultry", ("poultry","meat"), 235, 290, 420, est=False, max_week=1050, portion=180, quality=0.5, iodine=6, grp="protein_animal")
+add("chicken_breast", "Куриное филе (грудка)", "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw", "poultry", ("poultry","meat"), 380, 450, 650, max_week=1050, portion=150, quality=0.8, iodine=6, grp="protein_animal")
+add("chicken_thigh", "Куриные бёдра", 172385, "poultry", ("poultry","meat"), 220, 280, 400, est=False, max_week=700, portion=170, quality=0.5, grp="protein_animal")
+add("chicken_liver", "Печень куриная", 171060, "offal", ("poultry","meat","offal"), 250, 320, 450, max_week=150, portion=120, quality=0.6, grp="protein_animal")
+add("chicken_heart", "Сердечки куриные", 171458, "offal", ("poultry","meat","offal"), 300, 380, 500, max_week=200, portion=120, quality=0.5, grp="protein_animal")
+add("turkey_breast", "Филе индейки", 174515, "poultry", ("poultry","meat"), None, 650, 850, max_week=1050, portion=150, quality=0.9, grp="protein_animal")
+add("turkey_ground", "Фарш из индейки", 172850, "poultry", ("poultry","meat"), None, 520, 700, max_week=700, portion=150, quality=0.7, grp="protein_animal")
+add("beef_bone_in", "Говядина на кости (лопатка/грудинка)", 168668, "meat", ("red_meat","meat"), 650, 800, 1100, est=False, max_week=700, portion=150, quality=0.5, iodine=7, grp="protein_animal")
+add("beef_lean", "Говядина бескостная (тазобедренная часть)", 171762, "meat", ("red_meat","meat"), None, 1000, 1400, max_week=700, portion=150, quality=0.8, iodine=7, grp="protein_animal")
+add("beef_ground", "Фарш говяжий", 171796, "meat", ("red_meat","meat"), 550, 700, 950, max_week=700, portion=150, quality=0.5, grp="protein_animal")
+add("beef_liver", "Печень говяжья", 169451, "offal", ("red_meat","meat","offal"), 350, 450, 600, max_week=150, portion=120, quality=0.6, grp="protein_animal")
+add("beef_heart", "Сердце говяжье", 168625, "offal", ("red_meat","meat","offal"), 300, 380, 500, max_week=250, portion=150, quality=0.6, grp="protein_animal")
+add("beef_tongue", "Язык говяжий", 170196, "offal", ("red_meat","meat","offal"), None, None, 1400, max_week=250, portion=100, quality=0.5, grp="protein_animal")
+add("pork_shoulder", "Свинина (лопатка/шея)", 167849, "meat", ("pork","red_meat","meat"), 420, 520, 750, max_week=700, portion=150, quality=0.4, iodine=7, grp="protein_animal")
+add("pork_loin", "Свинина корейка", 167818, "meat", ("pork","red_meat","meat"), 480, 580, 800, max_week=700, portion=150, quality=0.5, grp="protein_animal")
+add("pork_tenderloin", "Свиная вырезка", 168249, "meat", ("pork","red_meat","meat"), None, 750, 1000, max_week=700, portion=150, quality=0.7, grp="protein_animal")
+add("pork_ground", "Фарш свиной", 167902, "meat", ("pork","red_meat","meat"), 400, 500, 700, max_week=500, portion=150, quality=0.3, grp="protein_animal")
+add("lamb", "Баранина", 172479, "meat", ("red_meat","meat"), None, 850, 1200, max_week=500, portion=150, quality=0.5, grp="protein_animal")
+
+# ---------------- Рыба и морепродукты ----------------
+add("pollock", "Минтай (замороженный)", 173725, "fish", ("fish",), 260, 320, 450, max_week=1050, portion=180, quality=0.7, iodine=150, grp="fish")
+add("cod", "Треска", 171955, "fish", ("fish",), None, 650, 900, max_week=1050, portion=170, quality=0.8, iodine=135, grp="fish")
+add("herring", "Сельдь свежемороженая", 175116, "fish", ("fish",), 280, 350, 500, max_week=700, portion=150, quality=0.8, iodine=40, grp="fish")
+add("herring_pickled", "Сельдь солёная", 175118, "fish", ("fish","pregnancy_avoid"), 350, 450, 650, roles=("lunch","dinner","snack"), max_week=350, portion=60, quality=0.5, iodine=40, grp="fish")
+add("pink_salmon", "Горбуша", 175138, "fish", ("fish","siberia"), 420, 520, 750, max_week=1050, portion=170, quality=0.8, iodine=50, grp="fish")
+add("chum_salmon", "Кета", 173689, "fish", ("fish","siberia"), None, 750, 1000, max_week=1050, portion=170, quality=0.8, iodine=50, grp="fish")
+add("salmon_atlantic", "Сёмга (аквакультура)", 175167, "fish", ("fish",), None, None, 2400, max_week=700, portion=160, quality=0.9, iodine=50, grp="fish")
+add("trout", "Форель (аквакультура)", 173717, "fish", ("fish",), None, 1500, 2000, max_week=700, portion=160, quality=0.9, iodine=40, grp="fish")
+add("mackerel", "Скумбрия", 175119, "fish", ("fish",), 340, 420, 600, max_week=700, portion=150, quality=0.8, iodine=45, grp="fish")
+add("sardines_canned", "Сардины консервированные в масле", 175139, "fish", ("fish","ultra_processed"), 550, 700, 950, roles=("lunch","dinner","snack"), max_week=350, portion=90, quality=0.6, iodine=35, grp="fish")
+add("tuna_canned", "Тунец консервированный в собственном соку", 173709, "fish", ("fish",), None, 900, 1300, roles=("lunch","dinner","snack"), max_week=350, portion=90, quality=0.6, iodine=50, grp="fish")
+add("pike", "Щука", 173680, "fish", ("fish","siberia"), 320, 400, 600, season="summer", max_week=700, portion=170, quality=0.7, iodine=50, grp="fish")
+add("whitefish", "Пелядь / муксун", 173711, "fish", ("fish","siberia"), None, 650, 1100, max_week=700, portion=170, quality=0.8, iodine=50, grp="fish")
+add("carp", "Карп / сазан", 171952, "fish", ("fish","siberia"), 260, 330, 480, season="summer", max_week=700, portion=180, quality=0.6, iodine=5, grp="fish")
+add("perch", "Окунь речной", 173678, "fish", ("fish","siberia"), 280, 350, 500, max_week=700, portion=170, quality=0.6, iodine=60, grp="fish")
+add("walleye", "Судак", 175128, "fish", ("fish","siberia"), None, 650, 950, max_week=700, portion=170, quality=0.8, iodine=50, grp="fish")
+add("squid", "Кальмар (замороженный)", 174223, "seafood", ("seafood","fish"), 550, 700, 950, max_week=500, portion=150, quality=0.7, iodine=300, grp="fish")
+add("shrimp", "Креветки", 174210, "seafood", ("seafood","fish"), None, 1200, 1700, max_week=500, portion=120, quality=0.7, iodine=110, grp="fish")
+add("red_caviar", "Икра лососёвая", 174188, "seafood", ("fish","pregnancy_avoid"), None, None, 6500, roles=("breakfast","snack"), max_week=70, portion=15, quality=0.6, grp="fish")
+
+# ---------------- Масла, сладкое, прочее ----------------
+add("sunflower_oil", "Масло подсолнечное", 171025, "fat", ("fasting_ok","siberia"), 160, 220, 350, roles=("lunch","dinner"), max_week=210, portion=10, quality=0.4, grp="fat")
+add("olive_oil", "Масло оливковое Extra Virgin", 171413, "fat", ("fasting_ok",), None, 1200, 1800, roles=("lunch","dinner"), max_week=210, portion=10, quality=0.9, grp="fat")
+add("flax_oil", "Масло льняное", 167702, "fat", ("fasting_ok","siberia"), 500, 650, 900, roles=("breakfast","lunch","dinner"), max_week=105, portion=7, quality=0.7, grp="fat")
+add("avocado", "Авокадо", 171705, "fruit", ("fasting_ok",), None, 550, 800, roles=("breakfast","lunch","dinner"), max_week=700, portion=80, quality=0.8, grp="fat")
+add("honey", "Мёд (алтайский)", 169640, "sweet", ("added_sugar","fasting_ok","high_gi","siberia"), 600, 800, 1200, roles=("breakfast","snack"), max_week=105, portion=15, quality=0.5, grp="sweet")
+add("sugar", "Сахар", 169655, "sweet", ("added_sugar","fasting_ok","high_gi"), 78, 90, 120, est=False, roles=("breakfast","snack"), max_week=140, portion=10, quality=0.1, grp="sweet")
+add("dark_chocolate", "Шоколад горький 70–85%", 170273, "sweet", ("added_sugar",), None, 1600, 2500, roles=("snack",), max_week=140, portion=20, quality=0.5, grp="sweet")
+add("cocoa", "Какао‑порошок", 169593, "other", ("fasting_ok",), 900, 1100, 1600, roles=("breakfast","snack"), max_week=70, portion=8, quality=0.6)
+add("jam", "Варенье / джем", 169641, "sweet", ("added_sugar","fasting_ok","high_gi"), 350, 450, 700, roles=("breakfast","snack"), max_week=140, portion=20, quality=0.2, grp="sweet")
+add("salt_iodized", "Соль йодированная", 173468, "other", ("fasting_ok",), 35, 45, 90, roles=("lunch","dinner"), max_week=35, portion=3, quality=0.5, iodine=4000, note="ГОСТ: 40±15 мг йода на кг соли")
+
+CATALOG = P
